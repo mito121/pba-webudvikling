@@ -18,7 +18,7 @@ export default {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + 'ZCyzK7P7FNT5dZa2O4jy5605')
+            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + import.meta.env.VITE_JIRA_TOKEN)
           },
           body: JSON.stringify({
             "fields": {
