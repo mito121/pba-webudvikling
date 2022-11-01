@@ -1,4 +1,6 @@
 <script>
+import { processExpression } from '@vue/compiler-core';
+
 export default {
   name: "app",
   data() {
@@ -16,7 +18,7 @@ export default {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + 'VYytnDqXjmFKo1jb43lK720E')
+            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + 'ZCyzK7P7FNT5dZa2O4jy5605')
           },
           body: JSON.stringify({
             "fields": {
@@ -45,7 +47,7 @@ export default {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + 'VYytnDqXjmFKo1jb43lK720E')
+            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + import.meta.env.VITE_JIRA_TOKEN)
           },
 
         })
