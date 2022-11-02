@@ -1,6 +1,4 @@
 <script>
-import { processExpression } from '@vue/compiler-core';
-
 export default {
   name: "app",
   data() {

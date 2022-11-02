@@ -8,7 +8,6 @@ const { createProxyMiddleware } = require("http-proxy-middleware");
 const API_SERVICE_URL = "https://eark.atlassian.net"
 
 app.use(cors());
-// Parse request body
 app.use(express.json());
 app.use((req, res, next) => {
     console.log(`${req.method} -> ${req.originalUrl}`);
