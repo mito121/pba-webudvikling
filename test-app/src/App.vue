@@ -54,16 +54,23 @@ export default {
           const { issues } = data
           this.issues = issues
         });
-    }
+    },
   },
   mounted() {
     this.getIssues()
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("q")) console.log("lol", JSON.parse(decodeURIComponent(params.get("q"))))
+
+
   }
 }
 </script>
 
 <template>
   <div>
+    <!-- OBS -- Der står localhost callback URL i URL'ets params -->
+    <a
+      href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
     <h1>Issues</h1>
     <ul>
       <li v-for="issue in issues" :key="issue.key">
