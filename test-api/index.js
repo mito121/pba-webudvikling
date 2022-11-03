@@ -4,6 +4,24 @@ const app = express();
 const axios = require("axios");
 const cors = require("cors");
 const { createProxyMiddleware } = require("http-proxy-middleware");
+const passport = require('passport')
+const initializePassport = require('./config/passport-setup')
+const session = require('express-session')
+const flash = require('express-flash')
+
+/* Passport */
+initializePassport(
+    passport
+);
+
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: true }
+})); // session secret
+app.use(passport.initialize());
+app.use(flash()); // use connect-flash for flash messages stored in session
 
 const API_SERVICE_URL = "https://eark.atlassian.net"
 
@@ -48,6 +66,29 @@ app.post("/issue", async (req, res) => {
     })
 });
 
+
+/* Oauth */
+app.get('/auth/atlassian-oauth',
+    passport.authenticate('atlassian-oauth'),
+    (req, res) => {
+        // The request will be redirected to the Atlassian app for authentication, so this
+        // function will not be called.
+        console.log("frol?")
+    });
+
+app.get('/auth/atlassian-oauth/callback',
+    passport.authenticate('atlassian-oauth', { failureRedirect: '/login' }),
+    function (req, res) {
+        console.log("frol???")
+        res.redirect('/');
+    });
+
+
+app.get('/login', passport.authenticate('atlassian-oauth', {
+    failWithError: true,
+    // scope: ['profile']
+}))
+
 app.listen(PORT, () => {
     console.log(`listening on *:${PORT}`);
-});
+})
