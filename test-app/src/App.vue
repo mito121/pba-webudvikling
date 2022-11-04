@@ -1,53 +1,71 @@
 <script>
-import { processExpression } from '@vue/compiler-core';
-
 export default {
   name: "app",
   data() {
     return {
       issues: [],
       newIssueSummary: "",
-      newIssueDesc: ""
+      newIssueDesc: "",
+      accessToken: null,
+      jiraProjects: [],
+      project: {},
+      cloudids: [],
+      cloudid: null
     }
   },
   methods: {
     createIssue() {
-      fetch('http://localhost:3000/issue',
+      const requestBody = `{
+                            "update": {},
+                            "fields": {
+                              "summary": "${this.newIssueSummary}",
+                              "issuetype": {
+                                "id": "${this.project.issueTypes[0].id}"
+                              },
+                              "project": {
+                                "id": "${this.project.id}"
+                              },
+                              "description": {
+                                "type": "doc",
+                                "version": 1,
+                                "content": [
+                                  {
+                                    "type": "paragraph",
+                                    "content": [
+                                      {
+                                        "text": "${this.newIssueDesc}",
+                                        "type": "text"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          }`
+      fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}/rest/api/3/issue/`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + import.meta.env.VITE_JIRA_TOKEN)
+            Authorization: `Bearer ${this.accessToken}`
           },
-          body: JSON.stringify({
-            "fields": {
-              "project": {
-                "key": "EARK"
-              },
-              "summary": this.newIssueSummary,
-              "description": this.newIssueDesc,
-              "issuetype": {
-                "id": "10001"
-              }
-            }
-          }),
+          body: requestBody,
         })
-        .then((res) => res.json())
-        .then((res) => {
-          const { data } = res
-          this.issues = [{ id: data.id, key: data.key, fields: { summary: this.newIssueSummary, description: this.newIssueDesc } }, ...this.issues]
-          this.newIssueDesc = this.newIssueSummary = ""
-        });
+        .then((response) => response.json())
+        .then((data) => {
+          /* Add issue to list */
+          this.addIssue(data.self)
+        })
     },
 
     getIssues() {
-      fetch('http://localhost:3000/rest/api/2/search?jql=project=EARK&maxResults=1000',
+      fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}"/rest/api/3/search?jql=project=${this.project.id}`,
         {
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
-            Authorization: 'Basic ' + btoa('rasm5970@edu.ucl.dk' + ":" + import.meta.env.VITE_JIRA_TOKEN)
+            Authorization: `Bearer ${this.accessToken}`
           },
 
         })
@@ -55,23 +73,93 @@ export default {
         .then((data) => {
           const { issues } = data
           this.issues = issues
+          console.log("issues", this.issues)
         });
+    },
+
+    addIssue(url) {
+      fetch(url,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${this.accessToken}`
+          },
+
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          this.issues = [data, ...this.issues]
+        });
+    },
+
+    getProject(cloudid) {
+      fetch(`https://api.atlassian.com/ex/jira/${cloudid}/rest/api/2/project`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${this.accessToken}`
+          },
+
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          this.jiraProjects = data
+          console.log("jira projects", this.jiraProjects)
+
+          /* Get first project */
+          fetch(this.jiraProjects[0].self,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+                Authorization: `Bearer ${this.accessToken}`
+              },
+            })
+            .then((response) => response.json())
+            .then((data) => {
+              this.project = data
+              console.log("this project", this.project)
+              this.getIssues()
+            });
+        });
+    },
+
+    signIn(params) {
+      this.accessToken = params.token
+      this.cloudids = [...params.data]
+      this.cloudid = this.cloudids[0].id
+      console.log("cloudids", this.cloudids)
+
+      // this.getUser();
+      this.getProject(this.cloudid)
     }
   },
   mounted() {
-    this.getIssues()
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("q")) this.signIn(JSON.parse(decodeURIComponent(params.get("q"))))
+
+
   }
 }
 </script>
 
 <template>
   <div>
+    <!-- OBS -- Der står localhost callback URL i URL'ets params -->
+    <a
+      href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
     <h1>Issues</h1>
     <ul>
-      <li v-for="issue in issues" :key="issue.key">
+      <li v-for="issue in issues" :key="issue.id">
         <strong>{{ issue.key }} : {{ issue.fields.summary }}</strong>
         <br />
-        <small>{{ issue.fields.description }}</small>
+        <div v-if="issue.fields.description && issue.fields.description.content.length">
+          <small v-for="desc in issue.fields.description.content">
+            <p v-for="text in desc.content">{{ text.text }}</p>
+          </small>
+        </div>
       </li>
     </ul>
 
