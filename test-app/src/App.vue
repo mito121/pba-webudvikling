@@ -10,7 +10,9 @@ export default {
       jiraProjects: [],
       project: {},
       cloudids: [],
-      cloudid: null
+      cloudid: null,
+      newProjectName: "",
+      newProjectKey: ""
     }
   },
   methods: {
@@ -129,17 +131,72 @@ export default {
     signIn(params) {
       this.accessToken = params.token
       this.cloudids = [...params.data]
+      console.log(this.cloudids)
       this.cloudid = this.cloudids[0].id
       console.log("cloudids", this.cloudids)
 
       // this.getUser();
       this.getProject(this.cloudid)
+    },
+
+    createProject() {
+      const bodyData =
+        `{
+          "name": "${this.newProjectName}",
+          "key": "${this.newProjectKey}",
+          "leadAccountId": "5e3abdfd387bb00cb2bc04eb",
+          "projectTypeKey": "software",
+          "projectTemplateKey": "com.pyxis.greenhopper.jira:gh-simplified-agility-kanban"
+        }`;
+
+      // const bodyData = `{
+      //                     "notificationScheme": 10021,
+      //                     "description": "Cloud migration initiative",
+      //                     "accountId": "5e3abdfd387bb00cb2bc04eb",
+      //                     "url": "http://atlassian.com",
+      //                     "avatarId": 10200,
+      //                     "issueSecurityScheme": 10001,
+      //                     "projectTemplateKey": "com.atlassian.jira-core-project-templates:jira-core-simplified-process-control",
+      //                     "name": "Example",
+      //                     "permissionScheme": 10011,
+      //                     "assigneeType": "PROJECT_LEAD",
+      //                     "projectTypeKey": "business",
+      //                     "key": "EX",
+      //                     "categoryId": 10120
+      //                   }`;
+      fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}/rest/api/2/project`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${this.accessToken}`
+          },
+          body: bodyData
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("create res", data)
+        });
     }
   },
   mounted() {
     const params = new URLSearchParams(window.location.search);
     if (params.get("q")) this.signIn(JSON.parse(decodeURIComponent(params.get("q"))))
 
+    fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}/rest/api/3/users/search`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${this.accessToken}`
+        },
+      })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("user res", data)
+      });
 
   }
 }
@@ -147,6 +204,24 @@ export default {
 
 <template>
   <div>
+    <div>
+      <i>projects:</i>
+      <p v-for="project in jiraProjects" :key="project.id">
+        <hr />
+      <div>id: {{ project.id }}</div>
+      <div>name: {{ project.name }}</div>
+      <div>key: {{ project.key }}</div>
+      <hr />
+      </p>
+    </div>
+    <form @submit.prevent="createProject">
+      <h1>Create project</h1>
+      <input type="text" v-model="newProjectName" placeholder="Name">
+      <br />
+      <input type="text" v-model="newProjectKey" placeholder="Key">
+      <br />
+      <button type="submit">submit</button>
+    </form>
     <!-- OBS -- Der står localhost callback URL i URL'ets params -->
     <a
       href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
@@ -168,8 +243,10 @@ export default {
       <input type="text" v-model="newIssueSummary" placeholder="Summary">
       <br />
       <textarea placeholder="Description" v-model="newIssueDesc"></textarea>
+      <br />
       <button type="submit">submit</button>
     </form>
+
   </div>
 </template>
 
