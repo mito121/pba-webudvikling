@@ -7,7 +7,7 @@ export default {
       newIssueSummary: "",
       newIssueDesc: "",
       accessToken: null,
-      jiraProjects: [],
+      projects: [],
       project: {},
       cloudids: [],
       cloudid: null,
@@ -62,8 +62,9 @@ export default {
         })
     },
 
-    getIssues() {
-      fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}"/rest/api/3/search?jql=project=${this.project.id}`,
+    getIssues(project) {
+      const { id } = project
+      fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}"/rest/api/3/search?jql=project=${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -96,7 +97,7 @@ export default {
         });
     },
 
-    getProject(cloudid) {
+    getProjects(cloudid) {
       fetch(`https://api.atlassian.com/ex/jira/${cloudid}/rest/api/2/project`,
         {
           headers: {
@@ -108,24 +109,28 @@ export default {
         })
         .then((response) => response.json())
         .then((data) => {
-          this.jiraProjects = data
-          console.log("jira projects", this.jiraProjects)
+          this.projects = data
+          console.log("projects", this.projects)
 
           /* Get first project */
-          fetch(this.jiraProjects[0].self,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                Authorization: `Bearer ${this.accessToken}`
-              },
-            })
-            .then((response) => response.json())
-            .then((data) => {
-              this.project = data
-              console.log("this project", this.project)
-              this.getIssues()
-            });
+          this.setProject(this.projects[0].self)
+        });
+    },
+
+    setProject(url) {
+      fetch(url,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${this.accessToken}`
+          },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          this.project = data
+          console.log("this project", this.project)
+          this.getIssues(this.project)
         });
     },
 
@@ -137,7 +142,7 @@ export default {
       console.log("cloudids", this.cloudids)
 
       // this.getUser();
-      this.getProject(this.cloudid)
+      this.getProjects(this.cloudid)
     },
 
     createProject() {
@@ -191,14 +196,10 @@ export default {
 <template>
   <div>
     <div>
-      <i>projects:</i>
-      <p v-for="project in jiraProjects" :key="project.id">
-        <hr />
-      <div>id: {{ project.id }}</div>
-      <div>name: {{ project.name }}</div>
-      <div>key: {{ project.key }}</div>
-      <hr />
-      </p>
+      <p><i>Projects</i></p>
+      <button v-for="project in projects" :key="project.id" @click="setProject(project.self)">
+        {{ project.name }}
+      </button>
     </div>
     <form @submit.prevent="createProject">
       <h1>Create project</h1>
