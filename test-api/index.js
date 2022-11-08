@@ -26,10 +26,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.post('/project/create', (req, res) => {
-    console.log("create gfrol")
-})
-
 /* OAuth */
 /* https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/ */
 app.get('/auth/callback', (req, res) => {

@@ -17,33 +17,34 @@ export default {
   },
   methods: {
     createIssue() {
-      const requestBody = `{
-                            "update": {},
-                            "fields": {
-                              "summary": "${this.newIssueSummary}",
-                              "issuetype": {
-                                "id": "${this.project.issueTypes[0].id}"
-                              },
-                              "project": {
-                                "id": "${this.project.id}"
-                              },
-                              "description": {
-                                "type": "doc",
-                                "version": 1,
-                                "content": [
-                                  {
-                                    "type": "paragraph",
-                                    "content": [
-                                      {
-                                        "text": "${this.newIssueDesc}",
-                                        "type": "text"
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            }
-                          }`
+      const requestBody =
+        `{
+        "update": {},
+        "fields": {
+          "summary": "${this.newIssueSummary}",
+          "issuetype": {
+            "id": "${this.project.issueTypes[0].id}"
+          },
+          "project": {
+            "id": "${this.project.id}"
+          },
+          "description": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "text": "${this.newIssueDesc}",
+                    "type": "text"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }`
       fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}/rest/api/3/issue/`,
         {
           method: "POST",
@@ -149,21 +150,6 @@ export default {
           "projectTemplateKey": "com.pyxis.greenhopper.jira:gh-simplified-agility-kanban"
         }`;
 
-      // const bodyData = `{
-      //                     "notificationScheme": 10021,
-      //                     "description": "Cloud migration initiative",
-      //                     "accountId": "5e3abdfd387bb00cb2bc04eb",
-      //                     "url": "http://atlassian.com",
-      //                     "avatarId": 10200,
-      //                     "issueSecurityScheme": 10001,
-      //                     "projectTemplateKey": "com.atlassian.jira-core-project-templates:jira-core-simplified-process-control",
-      //                     "name": "Example",
-      //                     "permissionScheme": 10011,
-      //                     "assigneeType": "PROJECT_LEAD",
-      //                     "projectTypeKey": "business",
-      //                     "key": "EX",
-      //                     "categoryId": 10120
-      //                   }`;
       fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}/rest/api/2/project`,
         {
           method: "POST",
