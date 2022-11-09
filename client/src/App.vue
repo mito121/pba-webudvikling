@@ -212,6 +212,8 @@ export default {
 
 <template>
   <div>
+    <a
+      href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
     <div>
       <p><i>Projects</i></p>
       <button v-for="project in projects" :key="project.id" @click="setProject(project.self)">
@@ -227,19 +229,17 @@ export default {
       <button type="submit">submit</button>
     </form>
 
-    <button @click="getUser('5e3abdfd387bb00cb2bc04eb')">get user</button>
+    <!-- <button @click="getUser('5e3abdfd387bb00cb2bc04eb')">get user</button> -->
 
     <!-- OBS -- Der står localhost callback URL i URL'ets params -->
-    <a
-      href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
     <h1>Issues</h1>
     <ul>
       <li v-for="issue in issues" :key="issue.id">
         <strong>{{ issue.key }} : {{ issue.fields.summary }}</strong>
         <br />
         <div v-if="issue.fields.description && issue.fields.description.content.length">
-          <small v-for="desc in issue.fields.description.content">
-            <p v-for="text in desc.content">{{ text.text }}</p>
+          <small v-for="(desc, index) in issue.fields.description.content" :key="index">
+            <p v-for="(text, index) in desc.content" :key="index">{{ text.text }}</p>
           </small>
         </div>
       </li>
