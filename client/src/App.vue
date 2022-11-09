@@ -117,6 +117,22 @@ export default {
         });
     },
 
+    getUser(userId) {
+      fetch(`https://api.atlassian.com/ex/jira/${this.cloudid}/rest/api/3/users?accountId=${userId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${this.accessToken}`
+          },
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          this.project = data
+          console.log("user", data)
+        });
+    },
+
     setProject(url) {
       fetch(url,
         {
@@ -168,6 +184,7 @@ export default {
         .then((response) => response.json())
         .then((data) => {
           console.log("create res", data)
+          this.getProjects(this.cloudid)
         });
     }
   },
@@ -209,6 +226,9 @@ export default {
       <br />
       <button type="submit">submit</button>
     </form>
+
+    <button @click="getUser('5e3abdfd387bb00cb2bc04eb')">get user</button>
+
     <!-- OBS -- Der står localhost callback URL i URL'ets params -->
     <a
       href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
