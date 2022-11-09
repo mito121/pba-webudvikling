@@ -212,48 +212,49 @@ export default {
 
 <template>
   <div>
-    <a
+    <a v-if="!accessToken"
       href="https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=f0rb1sOMiQ9pPK860ygqqZ87hKHfHeyx&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback&state=teststate&response_type=code&prompt=consent">login</a>
-    <div>
-      <p><i>Projects</i></p>
-      <button v-for="project in projects" :key="project.id" @click="setProject(project.self)">
-        {{ project.name }}
-      </button>
-    </div>
-    <form @submit.prevent="createProject">
-      <h1>Create project</h1>
-      <input type="text" v-model="newProjectName" placeholder="Name">
-      <br />
-      <input type="text" v-model="newProjectKey" placeholder="Key">
-      <br />
-      <button type="submit">submit</button>
-    </form>
-
-    <!-- <button @click="getUser('5e3abdfd387bb00cb2bc04eb')">get user</button> -->
-
-    <!-- OBS -- Der står localhost callback URL i URL'ets params -->
-    <h1>Issues</h1>
-    <ul>
-      <li v-for="issue in issues" :key="issue.id">
-        <strong>{{ issue.key }} : {{ issue.fields.summary }}</strong>
+    <div v-else>
+      <div>
+        <p><i>Projects</i></p>
+        <button v-for="project in projects" :key="project.id" @click="setProject(project.self)">
+          {{ project.name }}
+        </button>
+      </div>
+      <form @submit.prevent="createProject">
+        <h1>Create project</h1>
+        <input type="text" v-model="newProjectName" placeholder="Name">
         <br />
-        <div v-if="issue.fields.description && issue.fields.description.content.length">
-          <small v-for="(desc, index) in issue.fields.description.content" :key="index">
-            <p v-for="(text, index) in desc.content" :key="index">{{ text.text }}</p>
-          </small>
-        </div>
-      </li>
-    </ul>
+        <input type="text" v-model="newProjectKey" placeholder="Key">
+        <br />
+        <button type="submit">submit</button>
+      </form>
 
-    <form @submit.prevent="createIssue">
-      <h1>Create issue</h1>
-      <input type="text" v-model="newIssueSummary" placeholder="Summary">
-      <br />
-      <textarea placeholder="Description" v-model="newIssueDesc"></textarea>
-      <br />
-      <button type="submit">submit</button>
-    </form>
+      <!-- <button @click="getUser('5e3abdfd387bb00cb2bc04eb')">get user</button> -->
 
+      <!-- OBS -- Der står localhost callback URL i URL'ets params -->
+      <h1>Issues</h1>
+      <ul>
+        <li v-for="issue in issues" :key="issue.id">
+          <strong>{{ issue.key }} : {{ issue.fields.summary }}</strong>
+          <br />
+          <div v-if="issue.fields.description && issue.fields.description.content.length">
+            <small v-for="(desc, index) in issue.fields.description.content" :key="index">
+              <p v-for="(text, index) in desc.content" :key="index">{{ text.text }}</p>
+            </small>
+          </div>
+        </li>
+      </ul>
+
+      <form @submit.prevent="createIssue">
+        <h1>Create issue</h1>
+        <input type="text" v-model="newIssueSummary" placeholder="Summary">
+        <br />
+        <textarea placeholder="Description" v-model="newIssueDesc"></textarea>
+        <br />
+        <button type="submit">submit</button>
+      </form>
+    </div>
   </div>
 </template>
 
